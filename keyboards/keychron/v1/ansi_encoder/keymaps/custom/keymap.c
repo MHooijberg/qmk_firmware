@@ -44,8 +44,9 @@ enum modes{
 #define KC_TASK LGUI(KC_TAB)
 #define NUM_OF_MODES 4
 
+bool is_alt_tab_active = false; // ADD this near the beginning of keymap.c
+uint16_t alt_tab_timer = 0;     // we will be using them soon.
 uint8_t current_mode = 0;
-#define TAPPING_TERM 300
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
@@ -65,13 +66,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 					tap_code16(KC_MPLY); // Pause/play music.
 					break;
 			}
-			return false;
 		} else if (record->event.pressed) { // Define long press
 			current_mode = (current_mode + 1) % NUM_OF_MODES; // Switch current encoder mode.
-			//TODO: show that current mode changed in rgb.
-			return false;
+
+      uint8_t current_animation = rgb_matrix_get_mode(); // Get current animation.
+      HSV current_color = rgb_matrix_get_hsv(); // Get current color.
+      
+      rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_SPLASH); // Set mode to reactive.
+      rgb_matrix_sethsv_noeeprom(80 * current_mode, 255, 255); // Change color based on mode.
+      
+      rgb_matrix_toggle_noeeprom();
+
+      rgb_matrix_mode(current_animation);
+      rgb_matrix_sethsv(current_color.h, current_color.s, current_color.v);
 		}
-		return true;
+		return false;
 	case ENC_LFT:
 		switch (current_mode){
 			case 0:
@@ -93,9 +102,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 			case 0:
 				tap_code16(C(G(KC_RGHT))); // Next desktop.
 				break;
-			case 1:
-				tap_code16(A(KC_TAB)); // TODO: Change this out with super Alt+Tab.
-				break;
+			case 1: // Super Alt+Tab
+        if (record->event.pressed) {
+          if (!is_alt_tab_active) {
+            is_alt_tab_active = true;
+            register_code(KC_LALT);
+          }
+          alt_tab_timer = timer_read();
+          register_code(KC_TAB);
+        }
+        else {
+          unregister_code(KC_TAB);
+        }
+        return true; // Handle key normally?
 			case 2:
 				tap_code16(KC_VOLU); // Volume up control.
 				break;
@@ -136,6 +155,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return false;
   }
   return true;
+}
+
+void matrix_scan_user(void) { // The very important timer.
+  if (is_alt_tab_active) {
+    if (timer_elapsed(alt_tab_timer) > 1000) {
+      unregister_code(KC_LALT);
+      is_alt_tab_active = false;
+    }
+  }
 }
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
