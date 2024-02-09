@@ -16,6 +16,7 @@
 
 #include "quantum.h"
 #include QMK_KEYBOARD_H
+#include "print.h"
 
 // clang-format off
 enum custom_keycodes {
@@ -52,6 +53,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
 	case ENC_CLCK:
 		if (record->tap.count && record->event.pressed) {
+      print("Single keypress activated.");
 			switch (current_mode){
 				case 0:
 					tap_code16(G(KC_TAB)); // Show/hide windows task view.
@@ -67,6 +69,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 					break;
 			}
 		} else if (record->event.pressed) { // Define long press
+      print("Long press activated");
 			current_mode = (current_mode + 1) % NUM_OF_MODES; // Switch current encoder mode.
 
       uint8_t current_animation = rgb_matrix_get_mode(); // Get current animation.
@@ -79,29 +82,48 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
       rgb_matrix_mode(current_animation);
       rgb_matrix_sethsv(current_color.h, current_color.s, current_color.v);
-		}
+		} else {
+      print("Presumably key release event.");
+    }
 		return false;
 	case ENC_LFT:
 		switch (current_mode){
 			case 0:
-				tap_code16(C(G(KC_LEFT))); // Scroll one desktop left
+        if (record->event.pressed) {
+				  tap_code16(C(G(KC_LEFT))); // Scroll one desktop left
+        }
 				break;
 			case 1:
-				tap_code16(A(S(KC_TAB))); // Last program in queue
-				break;
+				if (record->event.pressed) {
+          if (!is_alt_tab_active) {
+            is_alt_tab_active = true;
+            register_code(KC_LALT);
+          }
+          alt_tab_timer = timer_read();
+          register_code16(S(KC_TAB));
+        } else {
+          unregister_code16(S(KC_TAB));
+        }
+        return true;
 			case 2:
+        if (record->event.pressed) {
 				tap_code16(KC_VOLD); // Volume down control.
-				break;
+        }
+        break;
 			case 3:
-				tap_code16(KC_MPRV); // Previous song.
+        if (record->event.pressed) {
+				  tap_code16(KC_MPRV); // Previous song.
+        }
 				break;
 		}
 		return false;
 	case ENC_RGHT:
 		switch (current_mode){
 			case 0:
-				tap_code16(C(G(KC_RGHT))); // Next desktop.
-				break;
+        if (record->event.pressed) {
+				  tap_code16(C(G(KC_RGHT))); // Next desktop.
+        }
+        break;
 			case 1: // Super Alt+Tab
         if (record->event.pressed) {
           if (!is_alt_tab_active) {
@@ -114,13 +136,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         else {
           unregister_code(KC_TAB);
         }
-        return true; // Handle key normally?
+        return true;
 			case 2:
-				tap_code16(KC_VOLU); // Volume up control.
-				break;
+        if (record->event.pressed) {
+				  tap_code16(KC_VOLU); // Volume up control.
+        }
+        break;
 			case 3:
-				tap_code16(KC_MNXT); // Next song.
-				break;
+        if (record->event.pressed) {
+				  tap_code16(KC_MNXT); // Next song.
+        }
+        break;
 		}
 		return false;
 		
@@ -164,6 +190,14 @@ void matrix_scan_user(void) { // The very important timer.
       is_alt_tab_active = false;
     }
   }
+}
+
+void keyboard_post_init_user(void) {
+  // Customise these values to desired behaviour
+  debug_enable=true;
+  debug_matrix=true;
+  //debug_keyboard=true;
+  //debug_mouse=true;
 }
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
