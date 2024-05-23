@@ -29,8 +29,8 @@ enum custom_keycodes {
 
 enum layers{
     DEFAULT,
-    GAMING,
-    PROGRAMMING,
+    Layer1,
+    Layer2,
     FN
 };
 
