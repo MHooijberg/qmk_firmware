@@ -54,25 +54,74 @@ uint8_t t = 0;
 uint8_t current_animation;
 HSV current_color;
 
-void handle_enc_click(void) {
+// Preprogrammed keymaps:
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+  // Default layer.
+  [DEFAULT] = LAYOUT_ansi_82(
+      KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,     KC_F12,   KC_PSCR,            ENC_CLCK,
+      KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,    KC_EQL,   KC_BSPC,            KC_HOME,
+      KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,    KC_RBRC,  KC_BSLS,            KC_INS,
+      KC_CAPS,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,              KC_ENT,             KC_DEL,
+      KC_LSFT,            KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,              KC_RSFT,  KC_UP,
+      KC_LCTL,  KC_LGUI,  KC_LALT,                                KC_SPC,                                 MO(3),  DF(GAMING), KC_RCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT),
+  // Layer used for functions.
+  [FN] = LAYOUT_ansi_82(
+      _______,  KC_BRID,  KC_BRIU,  KC_TASK,  KC_FLXP,  RGB_VAD,  RGB_VAI,  KC_MPRV,  KC_MPLY,  KC_MNXT,  KC_MUTE,  KC_VOLD,    KC_VOLU,  _______,            _______,
+      _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,    _______,  _______,            _______,
+      RGB_TOG,  RGB_MOD,  RGB_VAI,  RGB_HUI,  RGB_SAI,  RGB_SPI,  _______,  _______,  _______,  _______,  _______,  _______,    _______,  _______,            _______,
+      _______,  RGB_RMOD, RGB_VAD,  RGB_HUD,  RGB_SAD,  RGB_SPD,  _______,  _______,  _______,  _______,  _______,  _______,              _______,            _______,
+      _______,            _______,  _______,  _______,  _______,  _______,  NK_TOGG,  _______,  _______,  _______,  _______,              _______,  _______,
+      _______,  _______,  _______,                                _______,                                _______,  _______,    _______,  _______,  _______,  _______),
+  // Layer used for programming.
+  [Layer1] = LAYOUT_ansi_82( 
+      KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,     KC_F12,   KC_PSCR,            ENC_CLCK,
+      KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,    KC_EQL,   KC_BSPC,            KC_HOME,
+      KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,    KC_RBRC,  KC_BSLS,            KC_INS,
+      KC_CAPS,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,              KC_ENT,             KC_DEL,
+      KC_LSFT,            KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,              KC_RSFT,  KC_UP,
+      KC_LCTL,  KC_LGUI,  KC_LALT,                                KC_SPC,                                 MO(3),  DF(GAMING), KC_RCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT),
+  // Layer used for gaming.
+  [Layer2] = LAYOUT_ansi_82(
+      KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,     KC_F12,   A(KC_PSCR),         KC_MUTE,
+      KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,    KC_EQL,   KC_BSPC,            KC_F13,
+      KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,    KC_RBRC,  KC_BSLS,            KC_F14,
+      KC_CAPS,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,              KC_ENT,             KC_F15,
+      KC_LSFT,            KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,              KC_RSFT,  KC_UP,
+      KC_LCTL,  KC_LGUI,  KC_LALT,                                KC_SPC,                                 MO(3),  DF(PROGRAMMING), KC_RCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT),
+};
 
-  
-  // rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_SPLASH); // Set mode to reactive.
-  // rgb_matrix_sethsv_noeeprom(70 * current_mode, 255, 255); // Change color based on mode.
-  // rgb_matrix_toggle_noeeprom();
+#if defined(ENCODER_MAP_ENABLE)
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
+  [DEFAULT] = { ENCODER_CCW_CW(ENC_LFT, ENC_RGHT)},
+  [FN]   = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI)}
+  [Layer1]   = { ENCODER_CCW_CW(ENC_LFT, ENC_RGHT)},
+  [Layer2] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU)},
+};
+#endif // ENCODER_MAP_ENABLE
 
-
-
-  // rgb_matrix_mode_noeeprom(current_animation);
-  // rgb_matrix_sethsv_noeeprom(current_color.h, current_color.s, current_color.v);
+void keyboard_post_init_user(void) {
+  // Customise these values to desired behaviour
+  // debug_enable=true;
+  // debug_matrix=true;
+  // debug_keyboard=true;
+  // debug_mouse=true;
 }
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+void matrix_scan_user(void) {
+  if (is_alt_tab_active && timer_elapsed(alt_tab_timer) > 1000) {
+    unregister_code(KC_LALT);
+    is_alt_tab_active = false;
+  }
+
   if (is_enc_clck_active && timer_elapsed(enc_clck_timer) >= 300) {
     current_mode = (current_mode + 1) % NUM_OF_MODES; // Switch current encoder mode.
     is_enc_clck_active = false;
     return false;
   }
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
 
   switch (keycode) {
     case ENC_CLCK: 
@@ -82,6 +131,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         enc_clck_timer = timer_read();
       }
       else {
+        // TODO: Can change this to be more dynamic with a map / array that can be extended rather easily.
         switch (current_mode){
           case 0: // Show/hide windows task view.
             tap_code16(G(KC_TAB)); 
@@ -99,7 +149,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         is_enc_clck_active = false;
       }
       return false;
-    case ENC_LFT:
+    case ENC_LFT: // TODO: Can change this to be more dynamic with a map / array that can be extended rather easily.
       switch (current_mode){
         case 0: // Scroll one desktop left
           if (record->event.pressed) {
@@ -130,7 +180,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           break;
       }
       return false;
-    case ENC_RGHT:
+    case ENC_RGHT: 
       switch (current_mode){
         case 0: // Next desktop.
           if (record->event.pressed) {
@@ -166,64 +216,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-void keyboard_post_init_user(void) {
-  // Customise these values to desired behaviour
-  debug_enable=true;
-  debug_matrix=true;
-  //debug_keyboard=true;
-  //debug_mouse=true;
+// Custom function to play a matrix effect on click.
+void handle_enc_click(void) {
+  // rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_SPLASH); // Set mode to reactive.
+  // rgb_matrix_sethsv_noeeprom(70 * current_mode, 255, 255); // Change color based on mode.
+  // rgb_matrix_toggle_noeeprom();
+  // rgb_matrix_mode_noeeprom(current_animation);
+  // rgb_matrix_sethsv_noeeprom(current_color.h, current_color.s, current_color.v);
 }
-
-void matrix_scan_user(void) { // The very important timer.
-  if (is_alt_tab_active) {
-    if (timer_elapsed(alt_tab_timer) > 1000) {
-      unregister_code(KC_LALT);
-      is_alt_tab_active = false;
-    }
-  }
-}
-
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [DEFAULT] = LAYOUT_ansi_82(
-        KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,     KC_F12,   KC_PSCR,            ENC_CLCK,
-        KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,    KC_EQL,   KC_BSPC,            KC_HOME,
-        KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,    KC_RBRC,  KC_BSLS,            KC_INS,
-        KC_CAPS,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,              KC_ENT,             KC_DEL,
-        KC_LSFT,            KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,              KC_RSFT,  KC_UP,
-        KC_LCTL,  KC_LGUI,  KC_LALT,                                KC_SPC,                                 MO(3),  DF(GAMING), KC_RCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT),
-
-    [PROGRAMMING] = LAYOUT_ansi_82(
-        KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,     KC_F12,   KC_PSCR,            ENC_CLCK,
-        KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,    KC_EQL,   KC_BSPC,            KC_HOME,
-        KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,    KC_RBRC,  KC_BSLS,            KC_INS,
-        KC_CAPS,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,              KC_ENT,             KC_DEL,
-        KC_LSFT,            KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,              KC_RSFT,  KC_UP,
-        KC_LCTL,  KC_LGUI,  KC_LALT,                                KC_SPC,                                 MO(3),  DF(GAMING), KC_RCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT),
-
-    [GAMING] = LAYOUT_ansi_82(
-        KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,     KC_F12,   A(KC_PSCR),         KC_MUTE,
-        KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,    KC_EQL,   KC_BSPC,            KC_F13,
-        KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,    KC_RBRC,  KC_BSLS,            KC_F14,
-        KC_CAPS,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,              KC_ENT,             KC_F15,
-        KC_LSFT,            KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,              KC_RSFT,  KC_UP,
-        KC_LCTL,  KC_LGUI,  KC_LALT,                                KC_SPC,                                 MO(3),  DF(PROGRAMMING), KC_RCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT),
-
-    [FN] = LAYOUT_ansi_82(
-        _______,  KC_BRID,  KC_BRIU,  KC_TASK,  KC_FLXP,  RGB_VAD,  RGB_VAI,  KC_MPRV,  KC_MPLY,  KC_MNXT,  KC_MUTE,  KC_VOLD,    KC_VOLU,  _______,            _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,    _______,  _______,            _______,
-        RGB_TOG,  RGB_MOD,  RGB_VAI,  RGB_HUI,  RGB_SAI,  RGB_SPI,  _______,  _______,  _______,  _______,  _______,  _______,    _______,  _______,            _______,
-        _______,  RGB_RMOD, RGB_VAD,  RGB_HUD,  RGB_SAD,  RGB_SPD,  _______,  _______,  _______,  _______,  _______,  _______,              _______,            _______,
-        _______,            _______,  _______,  _______,  _______,  _______,  NK_TOGG,  _______,  _______,  _______,  _______,              _______,  _______,
-        _______,  _______,  _______,                                _______,                                _______,  _______,    _______,  _______,  _______,  _______),
-};
-
-// clang-format on
-
-#if defined(ENCODER_MAP_ENABLE)
-const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [DEFAULT] = { ENCODER_CCW_CW(ENC_LFT, ENC_RGHT)},
-    [PROGRAMMING]   = { ENCODER_CCW_CW(ENC_LFT, ENC_RGHT)},
-    [GAMING] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU)},
-    [FN]   = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI)}
-};
-#endif // ENCODER_MAP_ENABLE
