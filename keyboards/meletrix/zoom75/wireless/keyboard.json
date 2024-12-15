@@ -12,7 +12,7 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "encoder": true
+        "encoder": false
     },
     "matrix_pins": {
         "rows": ["A15", "C9", "B1", "B0", "C5", "C4"],
@@ -22,8 +22,8 @@
     "url": "",
     "usb": {
         "device_version": "1.0.0",
-        "pid": "0x0000",
-        "vid": "0xFEED"
+        "pid": "0xDF11",
+        "vid": "0x2E3C"
     },
     "layouts": {
         "LAYOUT_75_ansi": {
