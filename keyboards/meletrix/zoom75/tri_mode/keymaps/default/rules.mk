@@ -1,0 +1,2 @@
+# BOOTLOADER = custom
+# FLASH_START = 0x08001000

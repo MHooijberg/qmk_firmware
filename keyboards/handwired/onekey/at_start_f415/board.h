@@ -8,3 +8,4 @@
 
 #undef AT32F415KB
 #define AT32F415RC
+#define AT32_HEXTCLK 16000000
